@@ -10,12 +10,15 @@ base {
 	archivesName = project.archives_base_name
 }
 
+println "DEBUG fabric_version = [${project.fabric_version}]"
+println "DEBUG notation = [net.fabricmc.fabric-api:fabric-api:${project.fabric_version}]"
+
 // Minecraft 26.1+ ships unobfuscated, so Loom needs no `mappings` dependency and uses the
 // non-remapping plugin id above (`net.fabricmc.fabric-loom`, not `fabric-loom-remap`).
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	implementation "net.fabricmc:fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 processResources {
