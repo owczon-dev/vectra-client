@@ -3,7 +3,7 @@
   "id": "vectra-client",
   "version": "${version}",
   "name": "Vectra Client",
-  "description": "A Fabric client utility mod for Minecraft 26.2: a ClickGUI (P) with Render/Combat/Movement/World/Utility/Uncategorized categories, HUD displays for FPS, ping and reach, and a TBot combat module.",
+  "description": "A Fabric client utility mod for Minecraft 26.2: a ClickGUI (P) with Render/Combat/Movement/World/Utility/Uncategorized categories, HUD displays for FPS, ping and reach, plus TBot and Shield Breaker combat modules.",
   "authors": [
     "owczon"
   ],
