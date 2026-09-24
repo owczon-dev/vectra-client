@@ -34,15 +34,25 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 
 | Module | What it does |
 |---|---|
-| TBot | Swings your main hand whenever another player comes within range |
+| TBot | Attacks (and swings at) the nearest other player that comes within range |
+| Shield Breaker | Swaps to an axe for one hit when you attack a blocking player, then swaps back |
 
-TBot has three settings: **Range** (1–6 blocks, default 3), **Swing Delay** (0–40 ticks between
-swings, default 10) and **Require Crosshair** (off by default — turn it on to only swing when the
-player in range is also the one you're aiming at).
+**TBot** has three settings: **Range** (1–6 blocks, default 3), **Attack Delay** (0–40 ticks
+between attacks, default 10) and **Require Crosshair** (off by default — turn it on to only attack
+when the player in range is also the one you're aiming at). It attacks through
+`MultiPlayerGameMode#attack`, the same path vanilla's own left-click takes, so the hit lands rather
+than only animating.
 
-Per the spec, TBot only performs the *swing animation* — it sends no attack packet and deals no
-damage. To make it hit as well, add `client.gameMode.attack(player, target);` next to the
-`player.swing(...)` call in `TBotModule#onTick`.
+**Shield Breaker** only reacts to *your* attack — it never attacks on its own. While you hold attack
+with a blocking player under your crosshair, it swaps the axe from your hotbar into your hand, hits,
+then returns the previously held item. An axe hit disables a shield for a few seconds; a sword swing
+just bounces off. Settings: **Range** (1–6, default 4), **Swap Back** (1–20 ticks it holds the axe,
+default 4) and **Cooldown** (0–40 ticks between swaps, default 10). If you're already holding an axe
+it does nothing and lets the vanilla hit do the work.
+
+Both modules are client-side. Shield Breaker keeps the server in sync by sending the carried-item
+packet itself, because `MultiPlayerGameMode` only re-sends it when it next attacks or interacts —
+without that the server would keep thinking you were holding the axe after the swap back.
 
 **Movement**, **World**, **Utility** and **Uncategorized** are listed in the GUI but have no modules
 yet.
@@ -65,7 +75,11 @@ shutdown. A corrupt or hand-edited file is logged and ignored rather than crashi
 ```
 
 The jar lands in `build/libs/vectra-client-0.1.0.jar`. Drop it into your `mods/` folder alongside
-Fabric API.
+Fabric API. Requires a **JDK 25** — Gradle itself needs JVM 17+, but `sourceCompatibility` needs 25
+specifically.
+
+Every push also builds on GitHub Actions and uploads the jar as the `vectra-client` artifact of that
+run.
 
 ## A note on the 26.2 API
 

@@ -3,6 +3,7 @@ package dev.owczon.vectraclient.module;
 import dev.owczon.vectraclient.module.impl.FpsDisplayModule;
 import dev.owczon.vectraclient.module.impl.PingDisplayModule;
 import dev.owczon.vectraclient.module.impl.ReachDisplayModule;
+import dev.owczon.vectraclient.module.impl.ShieldBreakerModule;
 import dev.owczon.vectraclient.module.impl.TBotModule;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public final class ModuleManager {
 
 		// -- Combat --
 		register(new TBotModule());
+		register(new ShieldBreakerModule());
 
 		// Movement, World, Utility and Uncategorized have no modules yet; the ClickGUI still
 		// lists them so it's obvious where future modules will land.

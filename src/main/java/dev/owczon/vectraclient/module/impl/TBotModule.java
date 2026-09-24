@@ -14,23 +14,23 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Trigger-bot: swings your main hand whenever another player comes within range.
+ * Trigger-bot: swings on, and hits, the nearest other player that comes within range.
  *
- * As specified this performs the swing animation only - it sends no attack packet and deals no
- * damage. To make it actually hit, add {@code client.gameMode.attack(player, target);} next to the
- * {@link #swing} call in {@link #onTick()}.
+ * The attack goes through {@code MultiPlayerGameMode#attack}, which is what vanilla's own left-click
+ * uses - it sends the attack packet and then plays the swing animation locally, so the hit actually
+ * lands rather than only animating.
  */
 public final class TBotModule extends Module {
 
 	private final Setting.DoubleSetting range = addDouble("Range", 3.0, 1.0, 6.0, 0.1);
-	private final Setting.DoubleSetting swingDelay = addDouble("Swing Delay (ticks)", 10.0, 0.0, 40.0, 1.0);
+	private final Setting.DoubleSetting attackDelay = addDouble("Attack Delay (ticks)", 10.0, 0.0, 40.0, 1.0);
 	private final Setting.BooleanSetting requireCrosshair = addBoolean("Require Crosshair", false);
 
-	/** Ticks left before another swing is allowed. */
+	/** Ticks left before another attack is allowed. */
 	private int cooldown;
 
 	public TBotModule() {
-		super("TBot", "Swings your hand when another player comes within range.", ModuleCategory.COMBAT);
+		super("TBot", "Attacks and swings at another player when they come within range.", ModuleCategory.COMBAT);
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public final class TBotModule extends Module {
 
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
-		if (player == null || player.isDeadOrDying()) {
+		if (player == null || client.gameMode == null || player.isDeadOrDying()) {
 			return;
 		}
 
@@ -56,12 +56,9 @@ public final class TBotModule extends Module {
 			return;
 		}
 
-		swing(player);
-		cooldown = swingDelay.get().intValue();
-	}
-
-	private void swing(LocalPlayer player) {
+		client.gameMode.attack(player, target);
 		player.swing(InteractionHand.MAIN_HAND);
+		cooldown = attackDelay.get().intValue();
 	}
 
 	/** Nearest other player inside the configured range, or {@code null} if there isn't one. */
