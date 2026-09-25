@@ -3,6 +3,7 @@ package dev.owczon.vectraclient.module;
 import dev.owczon.vectraclient.module.impl.FpsDisplayModule;
 import dev.owczon.vectraclient.module.impl.JumpResetModule;
 import dev.owczon.vectraclient.module.impl.OffhandModule;
+import dev.owczon.vectraclient.module.impl.OverlayModule;
 import dev.owczon.vectraclient.module.impl.PingDisplayModule;
 import dev.owczon.vectraclient.module.impl.ReachDisplayModule;
 import dev.owczon.vectraclient.module.impl.ShieldBreakerModule;
@@ -32,6 +33,7 @@ public final class ModuleManager {
 		register(new FpsDisplayModule());
 		register(new PingDisplayModule());
 		register(new ReachDisplayModule());
+		register(new OverlayModule());
 
 		// -- Combat --
 		register(new TBotModule());

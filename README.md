@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **39 626 bytes**;
+URL for it) and drop it into your `mods` folder. It is **44 053 bytes**;
 
 ```
-sha256 04094e4f5825ac6f3fcbe5002cc42414652855f601bd0f488ebb68f5d4dcf6f5
+sha256 341b8d42623702f55aca810b5fe5c3419353735a9809a7858ec8dc79d06670c9
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -49,6 +49,7 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 | FPS Display | Shows your current frame rate in the top-left of the HUD |
 | Ping Display | Shows your latency to the server in milliseconds |
 | Reach Display | Shows the distance to the entity currently under your crosshair |
+| Overlay | Shows a coloured outline around other players and optionally their health |
 
 **Combat**
 
@@ -122,6 +123,20 @@ vanilla's inventory screen uses for every click. The server sees a normal `SWAP`
 In **auto** mode no GUI opens at all; in **silent** mode the inventory screen flashes open for
 one tick (purely cosmetic — the swap packet is already sent).
 
+**Overlay** draws a coloured outline around every other player and optionally their remaining
+health above their head.
+
+| Setting | Default | What it does |
+|---|---|---|
+| Outline | on | Coloured outline through walls (uses vanilla's built-in glow renderer) |
+| Health | on | Floating health number above each player, colour-graded green → red |
+
+The outline sets the vanilla glowing entity-data flag (bit 6 of the shared flags byte)
+on every other player each tick and clears it on disable. Minecraft's own post-process
+outline renderer handles the rest — no custom shaders, no framebuffer hacks. The health text
+is submitted through the same `submitNameTag` code path that vanilla's own nametags use, so
+it scales and fades the same way.
+
 **World** and **Uncategorized** are listed in the GUI but have no modules yet.
 
 ### Config
@@ -192,7 +207,7 @@ dev.owczon.vectraclient
 │   ├── ModuleManager       owns every module instance and drives their ticks
 │   ├── Setting             DoubleSetting / BooleanSetting
 │   └── impl/               FpsDisplay, PingDisplay, ReachDisplay, TBot, ShieldBreaker,
-│                             JumpReset, Offhand
+│                             JumpReset, Offhand, Overlay
 ├── hud/HudRenderer         draws the enabled display modules via HudElementRegistry
 ├── gui/ClickGuiScreen      the ClickGUI panel
 ├── gui/widget/SettingSlider  slider bound to a DoubleSetting
