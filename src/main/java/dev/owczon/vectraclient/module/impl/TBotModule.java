@@ -58,6 +58,11 @@ public final class TBotModule extends Module {
 			return;
 		}
 
+		// Don't attack while eating, drinking, shielding, or using any item.
+		if (player.isUsingItem()) {
+			return;
+		}
+
 		// Attacking before the weapon is charged still sends the packet, but vanilla scales the
 		// damage by (0.2 + charge^2 * 0.8) - so a spammed hit at 30% charge does a third of the
 		// damage. Waiting for the cooldown is what makes "spam hitting" actually hurt.

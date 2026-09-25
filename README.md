@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **48 819 bytes**;
+URL for it) and drop it into your `mods` folder. It is **49 136 bytes**;
 
 ```
-sha256 ee0a9ac4743358e9607ddb1de019724a4203c56b3f075efa20d425f68de8f3a2
+sha256 7a9f585fa40a60b4c454cd83ad13ee4b500296e7c15a499763af8141c3bd92c1
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -91,7 +91,8 @@ adapts automatically to whatever you're holding and to Haste/Mining Fatigue-styl
 effects.
 
 It attacks through `MultiPlayerGameMode#attack`, the same path vanilla's own left-click takes, so
-the hit lands rather than only animating.
+the hit lands rather than only animating. TBot also skips attacking while you're using an item
+(eating, drinking, shielding, etc.) so it never interrupts your consumables.
 
 **Shield Breaker** only reacts to *your* attack — it never attacks on its own. While you hold attack
 with a blocking player under your crosshair, it swaps the axe from your hotbar into your hand, hits,
@@ -138,7 +139,8 @@ and the health text via `submitNameTag`. Both use world-space coordinates; the c
 transform is handled by the render pipeline. Colour lerp: green (full HP) → red (low HP).
 
 **Tracers** draws a line from your crosshair (camera position) to every other player
-in range, using vanilla's gizmo debug-line system. Colour lerp: green (far) → yellow → red
+in range, using `submitCustomGeometry` with `RenderTypes.LINES` — the same render pipeline
+vanilla uses for block outlines and hit outlines. Colour lerp: green (far) → yellow → red
 (close).
 
 | Setting | Default | What it does |
