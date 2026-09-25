@@ -31,6 +31,34 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
 }
 
+// Exports the jars this project compiles against, so a machine without access to Maven/Mojang
+// can still run javac (see the provision-toolchain job in .github/workflows/build.yml).
+// Filtered down to the jars that actually matter for compiling this mod, to keep the archive small.
+tasks.register('exportCompileClasspath') {
+	doLast {
+		def outDir = file('compile-libs')
+		delete outDir
+		outDir.mkdirs()
+
+		def wanted = ~/(?i).*(minecraft|fabric|gson|lwjgl|joml|annotations).*\.jar/
+		def jars = sourceSets.main.compileClasspath.files.findAll {
+			it.isFile() && it.name ==~ wanted
+		}
+
+		copy {
+			from jars
+			into outDir
+		}
+		println "Exported ${jars.size()} jars:"
+		jars.each { println "  ${it.name} (${it.length() / 1024} KB)" }
+
+		exec {
+			workingDir projectDir
+			commandLine 'tar', 'czf', 'build/compile-libs.tar.gz', '-C', projectDir, 'compile-libs'
+		}
+	}
+}
+
 java {
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build"
 	// task if it is present.

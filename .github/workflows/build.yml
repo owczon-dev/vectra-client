@@ -59,3 +59,47 @@ jobs:
           git add ci/
           git commit -m "CI output for run $GITHUB_RUN_NUMBER [skip ci]" || echo "nothing to commit"
           git push --force origin ci-logs || echo "push failed"
+
+  # Run manually (gh workflow run) to provision a toolchain for building locally on a machine
+  # that can only reach github.com: a jlink'd JDK containing javac/jar, plus the jars on this
+  # project's compile classpath (Minecraft, Fabric API, loader, ...), which normally come from
+  # Maven/Mojang. Pushed to the ci-toolchain branch so it can be fetched with git.
+  provision-toolchain:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Resolve and export the compile classpath
+        run: ./gradlew exportCompileClasspath --stacktrace
+
+      - name: Build a minimal JDK with javac and jar
+        run: |
+          jlink --add-modules jdk.compiler,jdk.jartool \
+                --no-header-files --no-man-pages --strip-debug \
+                --output jdk-min
+          tar czf jdk-min.tar.gz jdk-min
+          ls -la jdk-min.tar.gz build/compile-libs.tar.gz
+
+      - name: Push toolchain to the ci-toolchain branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-toolchain
+          mkdir -p toolchain
+          cp jdk-min.tar.gz toolchain/
+          cp build/compile-libs.tar.gz toolchain/
+          git add toolchain/
+          git commit -m "Local build toolchain for run $GITHUB_RUN_NUMBER [skip ci]"
+          git push --force origin ci-toolchain
