@@ -81,6 +81,25 @@ specifically.
 Every push also builds on GitHub Actions and uploads the jar as the `vectra-client` artifact of that
 run.
 
+### Building without Gradle
+
+Minecraft 26.1+ ships unobfuscated, so there is no remapping step — a mod jar is just compiled
+classes plus processed resources. That means `javac` + `jar` are enough, and Gradle is only strictly
+needed to *obtain* Minecraft, Fabric API and the loader (which it downloads from Maven and Mojang).
+
+For machines that can't reach those hosts, `tools/` splits the two apart:
+
+```bash
+./tools/setup-toolchain.sh   # fetches a JDK 25 (javac/jar) + the compile classpath jars
+./tools/build.sh             # compiles and packages release/vectra-client-<version>.jar
+```
+
+`setup-toolchain.sh` pulls both from the `ci-toolchain` branch, where GitHub Actions (which has
+unrestricted network) publishes them. To regenerate that branch, push a commit whose message
+contains `[toolchain]` — that triggers the `provision-toolchain` job in the workflow.
+
+The resulting jar is equivalent to Gradle's: same entries, same `fabric.mod.json`.
+
 ## A note on the 26.2 API
 
 Minecraft 26.1+ ships **unobfuscated**, which changed a lot of what mods are built on:
