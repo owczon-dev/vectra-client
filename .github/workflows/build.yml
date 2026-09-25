@@ -81,8 +81,15 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      # continue-on-error so the log and whatever was produced still get published below.
       - name: Resolve and export the compile classpath
-        run: ./gradlew exportCompileClasspath --stacktrace
+        run: |
+          set +e
+          ./gradlew exportCompileClasspath --stacktrace > export.log 2>&1
+          code=$?
+          cat export.log
+          exit $code
+        continue-on-error: true
 
       - name: Build a minimal JDK with javac and jar
         run: |
@@ -90,7 +97,7 @@ jobs:
                 --no-header-files --no-man-pages --strip-debug \
                 --output jdk-min
           tar czf jdk-min.tar.gz jdk-min
-          ls -la jdk-min.tar.gz build/compile-libs.tar.gz
+          ls -la jdk-min.tar.gz
 
       - name: Push toolchain to the ci-toolchain branch
         run: |
@@ -98,8 +105,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B ci-toolchain
           mkdir -p toolchain
-          cp jdk-min.tar.gz toolchain/
-          cp build/compile-libs.tar.gz toolchain/
+          [ -f export.log ] && cp export.log toolchain/
+          [ -f jdk-min.tar.gz ] && cp jdk-min.tar.gz toolchain/
+          [ -f build/compile-libs.tar.gz ] && cp build/compile-libs.tar.gz toolchain/
+          ls -la toolchain/
           git add toolchain/
-          git commit -m "Local build toolchain for run $GITHUB_RUN_NUMBER [skip ci]"
-          git push --force origin ci-toolchain
+          git commit -m "Local build toolchain for run $GITHUB_RUN_NUMBER [skip ci]" || echo "nothing to commit"
+          git push --force origin ci-toolchain || echo "push failed"
