@@ -1,6 +1,8 @@
 package dev.owczon.vectraclient.module;
 
 import dev.owczon.vectraclient.module.impl.FpsDisplayModule;
+import dev.owczon.vectraclient.module.impl.JumpResetModule;
+import dev.owczon.vectraclient.module.impl.OffhandModule;
 import dev.owczon.vectraclient.module.impl.PingDisplayModule;
 import dev.owczon.vectraclient.module.impl.ReachDisplayModule;
 import dev.owczon.vectraclient.module.impl.ShieldBreakerModule;
@@ -35,7 +37,13 @@ public final class ModuleManager {
 		register(new TBotModule());
 		register(new ShieldBreakerModule());
 
-		// Movement, World, Utility and Uncategorized have no modules yet; the ClickGUI still
+		// -- Movement --
+		register(new JumpResetModule());
+
+		// -- Utility --
+		register(new OffhandModule());
+
+		// World and Uncategorized have no modules yet; the ClickGUI still
 		// lists them so it's obvious where future modules will land.
 	}
 

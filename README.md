@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **36 639 bytes**;
+URL for it) and drop it into your `mods` folder. It is **39 626 bytes**;
 
 ```
-sha256 de1a43bfc6aa8e44c3ad6bcee486a34d04e4e346fb79814134cf2088847d8c3c
+sha256 04094e4f5825ac6f3fcbe5002cc42414652855f601bd0f488ebb68f5d4dcf6f5
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -57,6 +57,18 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 | TBot | Attacks (and swings at) the nearest other player that comes within range |
 | Shield Breaker | Swaps to an axe for one hit when you attack a blocking player, then swaps back |
 
+**Movement**
+
+| Module | What it does |
+|---|---|
+| Jump Reset | Automatically jumps when you take damage |
+
+**Utility**
+
+| Module | What it does |
+|---|---|
+| Offhand | Swaps a totem of undying into your offhand when your health drops below a threshold |
+
 **TBot** has five settings:
 
 | Setting | Default | What it does |
@@ -89,8 +101,28 @@ Both modules are client-side. Shield Breaker keeps the server in sync by sending
 packet itself, because `MultiPlayerGameMode` only re-sends it when it next attacks or interacts —
 without that the server would keep thinking you were holding the axe after the swap back.
 
-**Movement**, **World**, **Utility** and **Uncategorized** are listed in the GUI but have no modules
-yet.
+**Jump Reset** detects the frame where your `hurtTime` transitions from 0 to positive (meaning
+you were just hit) and calls `jumpFromGround()` if you're on the ground. That's the same method
+vanilla's space-bar path uses — it directly applies the jump velocity. One-tick reaction time,
+no input manipulation needed. No settings — it just works.
+
+**Offhand** checks every tick whether your health is below the threshold and a totem of undying
+is somewhere in your inventory. If so, it performs a `SWAP` container action on `containerId=0`
+(the always-available player inventory menu) to move the totem into the offhand slot.
+
+| Setting | Default | What it does |
+|---|---|---|
+| Health Threshold | 4 (1–20) | Swap when your health drops below this |
+| Delay (ticks) | 2 (0–20) | Cooldown between swap attempts |
+| Silent | off | Open the inventory screen briefly so the swap looks like a manual interaction |
+
+The swap goes through `MultiPlayerGameMode#handleContainerInput`, the same code path that
+vanilla's inventory screen uses for every click. The server sees a normal `SWAP` action on
+`containerId=0`, which is always valid — no `OPEN_INVENTORY` handshake needed for auto mode.
+In **auto** mode no GUI opens at all; in **silent** mode the inventory screen flashes open for
+one tick (purely cosmetic — the swap packet is already sent).
+
+**World** and **Uncategorized** are listed in the GUI but have no modules yet.
 
 ### Config
 
@@ -159,7 +191,8 @@ dev.owczon.vectraclient
 │   ├── ModuleCategory      Render / Combat / Movement / World / Utility / Uncategorized
 │   ├── ModuleManager       owns every module instance and drives their ticks
 │   ├── Setting             DoubleSetting / BooleanSetting
-│   └── impl/               FpsDisplay, PingDisplay, ReachDisplay, TBot
+│   └── impl/               FpsDisplay, PingDisplay, ReachDisplay, TBot, ShieldBreaker,
+│                             JumpReset, Offhand
 ├── hud/HudRenderer         draws the enabled display modules via HudElementRegistry
 ├── gui/ClickGuiScreen      the ClickGUI panel
 ├── gui/widget/SettingSlider  slider bound to a DoubleSetting
