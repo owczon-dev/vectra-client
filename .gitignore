@@ -41,4 +41,7 @@ replay_*.log
 
 # local (gradle-free) build output
 compile-libs/
-release/
+release/*
+# ...except the built mod jar, which is committed so it can be downloaded
+# straight from the repo without signing in to GitHub Actions.
+!release/*.jar
