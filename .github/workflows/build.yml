@@ -91,6 +91,11 @@ jobs:
           exit $code
         continue-on-error: true
 
+      - name: Package the exported jars
+        run: |
+          if [ -d compile-libs ]; then tar czf compile-libs.tar.gz compile-libs; fi
+          ls -la compile-libs.tar.gz 2>/dev/null || echo "no compile-libs to package"
+
       - name: Build a minimal JDK with javac and jar
         run: |
           jlink --add-modules jdk.compiler,jdk.jartool \
@@ -107,7 +112,7 @@ jobs:
           mkdir -p toolchain
           [ -f export.log ] && cp export.log toolchain/
           [ -f jdk-min.tar.gz ] && cp jdk-min.tar.gz toolchain/
-          [ -f build/compile-libs.tar.gz ] && cp build/compile-libs.tar.gz toolchain/
+          [ -f compile-libs.tar.gz ] && cp compile-libs.tar.gz toolchain/
           ls -la toolchain/
           git add toolchain/
           git commit -m "Local build toolchain for run $GITHUB_RUN_NUMBER [skip ci]" || echo "nothing to commit"

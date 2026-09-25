@@ -52,11 +52,6 @@ tasks.register('exportCompileClasspath') {
 		println "Exported ${jars.size()} jars:"
 		jars.each { println "  ${it.name} (${it.length() / 1024} KB)" }
 
-		file('build').mkdirs()
-		exec {
-			workingDir projectDir
-			commandLine 'tar', 'czf', 'build/compile-libs.tar.gz', '-C', projectDir, 'compile-libs'
-		}
 	}
 }
 
