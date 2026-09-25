@@ -57,11 +57,26 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 | TBot | Attacks (and swings at) the nearest other player that comes within range |
 | Shield Breaker | Swaps to an axe for one hit when you attack a blocking player, then swaps back |
 
-**TBot** has three settings: **Range** (1–6 blocks, default 3), **Attack Delay** (0–40 ticks
-between attacks, default 10) and **Require Crosshair** (off by default — turn it on to only attack
-when the player in range is also the one you're aiming at). It attacks through
-`MultiPlayerGameMode#attack`, the same path vanilla's own left-click takes, so the hit lands rather
-than only animating.
+**TBot** has five settings:
+
+| Setting | Default | What it does |
+|---|---|---|
+| Range | 3 (1–6) | How close a player has to be before TBot hits them |
+| Weapon Cooldown | on | Wait for the weapon's attack cooldown before hitting, so every hit lands at full damage |
+| Min Charge (%) | 100 (0–100) | Fire once the cooldown reaches this much; lower it to trade damage for hit rate |
+| Attack Delay (ticks) | 0 (0–40) | Extra ticks to wait *after* the cooldown is ready |
+| Require Crosshair | off | Only attack when the player in range is also the one you're aiming at |
+
+Weapon Cooldown is the important one. Attacking early still sends the packet, but vanilla scales
+damage by `0.2 + charge² × 0.8`, so spraying hits at 30% charge does about a third of the damage —
+that's why "spam clicking" feels useless. With it on, TBot times each hit to the moment your weapon
+is charged (a netherite sword is ~12.5 ticks, an axe ~20), so it hits as fast as the weapon allows
+and every hit counts. It reads the same cooldown the vanilla crosshair indicator uses, so it
+adapts automatically to whatever you're holding and to Haste/Mining Fatigue-style attack-speed
+effects.
+
+It attacks through `MultiPlayerGameMode#attack`, the same path vanilla's own left-click takes, so
+the hit lands rather than only animating.
 
 **Shield Breaker** only reacts to *your* attack — it never attacks on its own. While you hold attack
 with a blocking player under your crosshair, it swaps the axe from your hotbar into your hand, hits,
