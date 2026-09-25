@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **49 136 bytes**;
+URL for it) and drop it into your `mods` folder. It is **50 353 bytes**;
 
 ```
-sha256 7a9f585fa40a60b4c454cd83ad13ee4b500296e7c15a499763af8141c3bd92c1
+sha256 f2d0d1cd7ed41d9b6d995ef5779a502aa4c21e5e205e0f322fac41a2e257e921
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -28,16 +28,17 @@ truncated or is an HTML page: check that the size is 36 639 bytes before blaming
 
 ### ClickGUI
 
-Opened with **P** (rebindable in *Options → Controls → Vectra Client*). The panel has three
-columns:
+Opened with **P** (rebindable in *Options → Controls → Vectra Client*). The panel has a modern
+two-column layout:
 
-| Column | What it does |
+| Area | What it does |
 |---|---|
-| Categories | Render, Combat, Movement, World, Utility, Uncategorized |
-| Modules | The modules in the selected category — click one to toggle it |
-| Settings | Sliders / toggles for the currently selected module |
+| Sidebar (left) | VECTRA CLIENT branding + category buttons (Render, Combat, Movement, World, Utility, Uncategorized) |
+| Main (right) | Module cards with toggle switches; click the ⚙ icon or the card to open settings |
 
-The panel is draggable by its title bar and remembers where you left it. The world keeps running
+Modules are shown as cards with a green accent stripe when enabled, a description line, and a
+toggle switch. The ⚙ icon opens the module's settings panel with sliders and boolean toggles.
+The panel is draggable by its header bar and remembers where you left it. The world keeps running
 behind it (it doesn't pause the game), so combat modules stay live while you configure them.
 
 ### Modules
@@ -235,8 +236,7 @@ dev.owczon.vectraclient
 │   └── impl/               FpsDisplay, PingDisplay, ReachDisplay, TBot, ShieldBreaker,
 │                             JumpReset, Offhand, Overlay, Tracers, Aim
 ├── hud/HudRenderer         draws the enabled display modules via HudElementRegistry
-├── gui/ClickGuiScreen      the ClickGUI panel
-├── gui/widget/SettingSlider  slider bound to a DoubleSetting
+├── gui/ClickGuiScreen      the modern ClickGUI panel (fully custom rendering)
 ├── util/TargetUtil         ray-march used to find the entity under the crosshair
 └── config/ConfigManager    loads/saves module state + settings as JSON
 ```
