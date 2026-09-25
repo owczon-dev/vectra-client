@@ -4,14 +4,15 @@ import dev.owczon.vectraclient.module.Module;
 import dev.owczon.vectraclient.module.ModuleCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 /**
- * Automatically jumps when the player takes damage.
+ * Automatically jumps when another player hits you.
  *
- * Detects the frame where {@code hurtTime} transitions from 0 to a positive value (meaning the
- * player was just hit) and calls {@code jumpFromGround()} if the player is on the ground.
- * {@code jumpFromGround} directly applies the jump velocity — the same thing vanilla's own
- * space-bar path does — so the hit registers as a proper jump.
+ * <p>Detects the frame where {@code hurtTime} transitions from 0 to a positive value and calls
+ * {@code jumpFromGround()} if the player is on the ground and was hurt by another player.
+ * Fall damage, mob hits, and environmental damage are ignored.
  */
 public final class JumpResetModule extends Module {
 
@@ -20,7 +21,7 @@ public final class JumpResetModule extends Module {
 
 	public JumpResetModule() {
 		super("Jump Reset",
-				"Automatically jumps when you take damage.",
+				"Automatically jumps when you get hit by another player.",
 				ModuleCategory.MOVEMENT);
 	}
 
@@ -41,8 +42,12 @@ public final class JumpResetModule extends Module {
 		int hurtTime = player.hurtTime;
 
 		// Detect the exact frame the player was hit: hurtTime went from 0 to > 0.
+		// Only jump if the attacker was another player (not fall damage, mobs, etc.).
 		if (hurtTime > 0 && prevHurtTime == 0 && player.onGround()) {
-			player.jumpFromGround();
+			LivingEntity attacker = player.getLastHurtByMob();
+			if (attacker instanceof Player && attacker != player) {
+				player.jumpFromGround();
+			}
 		}
 
 		prevHurtTime = hurtTime;

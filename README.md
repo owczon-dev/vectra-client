@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **50 293 bytes**;
+URL for it) and drop it into your `mods` folder. It is **53 583 bytes**;
 
 ```
-sha256 c971547e9ab1e1abf674afc5d65954e20e15802f2a4d85b3116b76b8b872be3c
+sha256 6428cbce47c57c0e5144ad2f583816a48cfae010ff85dcdb26457547abbb0335
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -65,7 +65,7 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 
 | Module | What it does |
 |---|---|
-| Jump Reset | Automatically jumps when you take damage |
+| Jump Reset | Automatically jumps when you get hit by another player (not fall/environmental damage) |
 
 **Utility**
 
@@ -97,19 +97,20 @@ the hit lands rather than only animating. TBot also skips attacking while you're
 
 **Shield Breaker** only reacts to *your* attack — it never attacks on its own. While you hold attack
 with a blocking player under your crosshair, it swaps the axe from your hotbar into your hand, hits,
-then returns the previously held item — all in the same tick. An axe hit disables a shield for a
-few seconds; a sword swing just bounces off. Settings: **Range** (1–6, default 4) and **Cooldown**
-(0–40 ticks between swaps, default 6). If you're already holding an axe it does nothing and lets
-the vanilla hit do the work.
+then returns the previously held item — all on the same tick. An axe hit disables a shield for a
+few seconds; a sword swing just bounces off. Setting: **Range** (1–6, default 4). No cooldown — the
+weapon's own attack speed is the only throttle, so spam-clicking works without interruption. If
+you're already holding an axe it does nothing and lets the vanilla hit do the work.
 
 Both modules are client-side. Shield Breaker keeps the server in sync by sending the carried-item
 packet itself, because `MultiPlayerGameMode` only re-sends it when it next attacks or interacts —
 without that the server would keep thinking you were holding the axe after the swap back.
 
 **Jump Reset** detects the frame where your `hurtTime` transitions from 0 to positive (meaning
-you were just hit) and calls `jumpFromGround()` if you're on the ground. That's the same method
-vanilla's space-bar path uses — it directly applies the jump velocity. One-tick reaction time,
-no input manipulation needed. No settings — it just works.
+you were just hit) and calls `jumpFromGround()` if you're on the ground and the attacker was
+another player. Fall damage, mob hits, and environmental damage are ignored. That's the same
+method vanilla's space-bar path uses — it directly applies the jump velocity. One-tick reaction
+time, no input manipulation needed. No settings — it just works.
 
 **Offhand** checks every tick whether your health is below the threshold and a totem of undying
 is somewhere in your inventory. If so, it performs a `SWAP` container action on `containerId=0`

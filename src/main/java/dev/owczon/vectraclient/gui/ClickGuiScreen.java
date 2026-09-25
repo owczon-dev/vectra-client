@@ -63,7 +63,7 @@ public class ClickGuiScreen extends Screen {
 	private static final int GEAR_BTN_W    = 20;
 	private static final int LOGO_IMG_SIZE = 48;
 
-	private static final Identifier LOGO_TEXTURE = VectraClient.id("icon");
+	private static final Identifier LOGO_TEXTURE = VectraClient.id("textures/icon");
 
 	// ── Persistent state ──────────────────────────────────────────────────────────
 	private static int panelX = -1;
