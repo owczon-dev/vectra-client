@@ -16,10 +16,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Draws a line from the player's crosshair to every other player.
  *
- * The colour lerps from <b>green</b> (far) through <b>yellow</b> to <b>red</b> (close), based on
- * the configured max distance. Lines are rendered as gizmos via {@code DrawableGizmoPrimitives},
- * the same debug-line system vanilla uses, so they clip through terrain and are visible at any
- * distance.
+ * Colour lerps from <b>green</b> (far) through <b>yellow</b> to <b>red</b> (close).
+ * Lines are rendered as gizmos via {@code DrawableGizmoPrimitives} — world-space coordinates,
+ * the camera transform is handled by the gizmo submit pipeline.
  */
 public final class TracersModule extends Module {
 
@@ -32,9 +31,6 @@ public final class TracersModule extends Module {
 				ModuleCategory.RENDER);
 	}
 
-	/**
-	 * Registers the world-render hook. Called once from {@link VectraClient#onInitializeClient}.
-	 */
 	public static void register() {
 		LevelRenderEvents.BEFORE_GIZMOS.register(ctx -> {
 			TracersModule mod = ModuleManager.getInstance().get(TracersModule.class);
@@ -52,10 +48,10 @@ public final class TracersModule extends Module {
 		}
 
 		float pt = client.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-		Vec3 camera = ctx.levelState().cameraRenderState.pos;
 
-		// Line origin: camera position (crosshair is at the camera, not at the hand).
-		Vec3 from = Vec3.ZERO; // gizmo system uses camera-relative coords via cameraRenderState
+		// Line origin: the camera's world-space position (crosshair).
+		Vec3 cameraPos = ctx.levelState().cameraRenderState.pos;
+		Vec3 from = cameraPos;
 
 		DrawableGizmoPrimitives gizmos = new DrawableGizmoPrimitives();
 		double maxDist = maxDistance.get();
@@ -66,14 +62,15 @@ public final class TracersModule extends Module {
 				continue;
 			}
 
-			double x = Mth.lerp(pt, player.xOld, player.getX()) - camera.x;
-			double y = Mth.lerp(pt, player.yOld, player.getY()) - camera.y;
-			double z = Mth.lerp(pt, player.zOld, player.getZ()) - camera.z;
+			// World-space interpolated position.
+			double x = Mth.lerp(pt, player.xOld, player.getX());
+			double y = Mth.lerp(pt, player.yOld, player.getY()) + player.getBbHeight() / 2.0;
+			double z = Mth.lerp(pt, player.zOld, player.getZ());
 
-			// Aim at the centre of the player model.
-			y += player.getBbHeight() / 2.0;
-
-			double distSq = x * x + y * y + z * z;
+			double dx = x - cameraPos.x;
+			double dy = y - cameraPos.y;
+			double dz = z - cameraPos.z;
+			double distSq = dx * dx + dy * dy + dz * dz;
 			if (distSq > maxDist * maxDist) {
 				continue;
 			}
@@ -84,12 +81,10 @@ public final class TracersModule extends Module {
 			// Green (far) → yellow (mid) → red (close).
 			int r, g;
 			if (fraction > 0.5F) {
-				// green → yellow
 				float t = (fraction - 0.5F) * 2.0F;
 				r = (int) (255 * (1.0F - t));
 				g = 255;
 			} else {
-				// yellow → red
 				float t = fraction * 2.0F;
 				r = 255;
 				g = (int) (255 * t);

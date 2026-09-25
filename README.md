@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **47 959 bytes**;
+URL for it) and drop it into your `mods` folder. It is **48 819 bytes**;
 
 ```
-sha256 cad92e1f1243863362dda773d2a4c7361399eae897c5d96d6e05af5a0c1d2d3a
+sha256 ee0a9ac4743358e9607ddb1de019724a4203c56b3f075efa20d425f68de8f3a2
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -125,23 +125,21 @@ vanilla's inventory screen uses for every click. The server sees a normal `SWAP`
 In **auto** mode no GUI opens at all; in **silent** mode the inventory screen flashes open for
 one tick (purely cosmetic — the swap packet is already sent).
 
-**Overlay** draws a coloured outline around every other player and optionally their remaining
+**Overlay** draws a wireframe box around every other player and optionally their remaining
 health above their head.
 
 | Setting | Default | What it does |
 |---|---|---|
-| Outline | on | Coloured outline through walls (uses vanilla's built-in glow renderer) |
+| Box | on | Rectangular wireframe (12 lines) around the player's bounding box |
 | Health | on | Floating health number above each player, colour-graded green → red |
 
-The outline sets the vanilla glowing entity-data flag (bit 6 of the shared flags byte)
-on every other player each tick and clears it on disable. Minecraft's own post-process
-outline renderer handles the rest — no custom shaders, no framebuffer hacks. The health text
-is submitted through the same `submitNameTag` code path that vanilla's own nametags use, so
-it scales and fades the same way.
+The box is rendered via `DrawableGizmoPrimitives#addLine` (vanilla's gizmo debug-line system)
+and the health text via `submitNameTag`. Both use world-space coordinates; the camera
+transform is handled by the render pipeline. Colour lerp: green (full HP) → red (low HP).
 
-**Tracers** draws a line from your crosshair (the camera position) to every other player
-in range, using vanilla's gizmo debug-line system (`DrawableGizmoPrimitives#addLine`).
-Colour lerp: green (far) → yellow (mid) → red (close).
+**Tracers** draws a line from your crosshair (camera position) to every other player
+in range, using vanilla's gizmo debug-line system. Colour lerp: green (far) → yellow → red
+(close).
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -149,16 +147,19 @@ Colour lerp: green (far) → yellow (mid) → red (close).
 | Line Width | 1.5 (0.5–5) | Thickness of the tracer lines |
 
 **Aim** smoothly rotates your crosshair towards the nearest player within reach.
-It calculates the angular delta between your current look direction and the target,
-then applies a configurable fraction of that delta each tick — so the rotation looks
-human rather than snapping. The aim point is placed at the target's mid-torso (50% of
-bounding-box height) to minimise vertical movement.
 
 | Setting | Default | What it does |
 |---|---|---|
 | Reach | 4.5 (1–6) | Only targets players within this distance |
 | Smooth | 0.5 (0.05–1) | Fraction of the angular delta applied each tick; lower = slower, smoother |
 | Require Aim Key | off | Only aim while the attack key is held |
+
+Aim only activates when you're holding a **melee weapon** (sword, axe, mace, trident — any
+item with a TOOL component that isn't a mining tool). If you swap to a **throwable item**
+(splash potion, ender pearl, snowball, bow, crossbow), aim stops immediately and waits 4 ticks
+after the swap before re-engaging. This prevents accidentally throwing a potion at an enemy
+during a fast hotbar swap. Pitch (vertical) movement is dampened to 30% of the yaw factor
+and the aim point is placed at 40% of the target's height to keep the crosshair at torso level.
 
 **World** and **Uncategorized** are listed in the GUI but have no modules yet.
 
