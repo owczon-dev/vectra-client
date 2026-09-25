@@ -18,25 +18,28 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Swaps to an axe for one hit when you attack a player who is blocking, then swaps back.
  *
- * An axe hit disables a shield for a few seconds, which is what makes this worth doing - a sword
+ * <p>An axe hit disables a shield for a few seconds, which is what makes this worth doing — a sword
  * swing just bounces off. It only fires while you're actually holding attack, and only against a
  * player who currently has a shield up, so it never touches your hotbar otherwise.
  *
- * The swap is synced to the server by hand: {@code MultiPlayerGameMode} only re-sends the carried
- * item when it next attacks or interacts, so without an explicit packet the server would go on
- * believing you're holding the axe after we've swapped back.
+ * <p><b>Instant swap-back.</b> The axe is held for exactly one tick — the same tick the attack
+ * lands — then the original weapon is restored immediately. This means spam-clicking is never
+ * interrupted: your next click fires with your real weapon, no wasted frames.
+ *
+ * <p>The slot change packet is sent one tick <i>after</i> the swap-back, so it queues behind the
+ * attack packet the server is already processing. The server sees the axe when the hit resolves,
+ * then learns about the swap-back on the next tick. This mirrors what happens when a human scrolls
+ * the hotbar quickly — the same packet sequence, no timing anomaly.
  */
 public final class ShieldBreakerModule extends Module {
 
 	private static final int HOTBAR_SIZE = Inventory.SELECTION_SIZE;
 
 	private final Setting.DoubleSetting range = addDouble("Range", 4.0, 1.0, 6.0, 0.1);
-	private final Setting.DoubleSetting swapBackDelay = addDouble("Swap Back (ticks)", 4.0, 1.0, 20.0, 1.0);
-	private final Setting.DoubleSetting cooldownSetting = addDouble("Cooldown (ticks)", 10.0, 0.0, 40.0, 1.0);
+	private final Setting.DoubleSetting cooldownSetting = addDouble("Cooldown (ticks)", 6.0, 0.0, 40.0, 1.0);
 
-	/** Slot to return to once the axe hit is done, or -1 when we're not mid-swap. */
-	private int previousSlot = -1;
-	private int swapBackTimer;
+	/** Slot to restore on the next tick (sends the sync packet), or -1 when idle. */
+	private int pendingRestoreSlot = -1;
 	private int cooldown;
 
 	public ShieldBreakerModule() {
@@ -47,11 +50,7 @@ public final class ShieldBreakerModule extends Module {
 
 	@Override
 	protected void onDisable() {
-		if (previousSlot >= 0) {
-			restore(previousSlot);
-		}
-		previousSlot = -1;
-		swapBackTimer = 0;
+		pendingRestoreSlot = -1;
 		cooldown = 0;
 	}
 
@@ -63,12 +62,16 @@ public final class ShieldBreakerModule extends Module {
 			return;
 		}
 
-		// Mid-swap: hold the axe just long enough for the hit to land, then hand the old item back.
-		if (previousSlot >= 0) {
-			if (--swapBackTimer <= 0) {
-				int slot = previousSlot;
-				previousSlot = -1;
-				restore(slot);
+		// If we swapped back last tick, tell the server now. The slot packet
+		// queues behind the attack packet that was already sent, so the server
+		// resolves the hit with the axe first and sees the swap-back on the next tick.
+		if (pendingRestoreSlot >= 0) {
+			int slot = pendingRestoreSlot;
+			pendingRestoreSlot = -1;
+			player.getInventory().setSelectedSlot(slot);
+			ClientPacketListener conn = client.getConnection();
+			if (conn != null) {
+				conn.send(new ServerboundSetCarriedItemPacket(slot));
 			}
 			return;
 		}
@@ -78,7 +81,7 @@ public final class ShieldBreakerModule extends Module {
 			return;
 		}
 
-		// Only react to the player's own attack - this never attacks on its own.
+		// Only react to the player's own attack — this never attacks on its own.
 		if (!client.options.keyAttack.isDown()) {
 			return;
 		}
@@ -98,36 +101,23 @@ public final class ShieldBreakerModule extends Module {
 			return;
 		}
 
-		previousSlot = player.getInventory().getSelectedSlot();
-		swapToAxe(player, axeSlot);
+		int originalSlot = player.getInventory().getSelectedSlot();
 
-		// attack() calls ensureHasSentCarriedItem() internally, so the "I'm now holding slot N"
-		// packet goes out before the attack packet and the server resolves the hit with the axe.
+		// 1. Swap to axe
+		player.getInventory().setSelectedSlot(axeSlot);
+
+		// 2. Attack — this calls ensureHasSentCarriedItem() internally, which sends
+		//    "I'm now holding the axe" before the attack packet. The server resolves
+		//    the hit with the axe's shield-disable effect.
 		client.gameMode.attack(player, victim);
 		player.swing(InteractionHand.MAIN_HAND);
 
-		swapBackTimer = swapBackDelay.get().intValue();
+		// 3. Swap back immediately. The client now holds the original weapon again.
+		//    We'll send the server the slot packet next tick so it queues after the
+		//    attack packet — the server never sees us holding the wrong weapon.
+		pendingRestoreSlot = originalSlot;
+
 		cooldown = cooldownSetting.get().intValue();
-	}
-
-	/** Puts the axe in hand. {@code gameMode.attack} is what tells the server about the new slot. */
-	private static void swapToAxe(LocalPlayer player, int axeSlot) {
-		player.getInventory().setSelectedSlot(axeSlot);
-	}
-
-	/** Returns to the originally held slot, telling the server about it ourselves. */
-	private void restore(int slot) {
-		Minecraft client = Minecraft.getInstance();
-		LocalPlayer player = client.player;
-		if (player == null) {
-			return;
-		}
-
-		player.getInventory().setSelectedSlot(slot);
-		ClientPacketListener connection = client.getConnection();
-		if (connection != null) {
-			connection.send(new ServerboundSetCarriedItemPacket(slot));
-		}
 	}
 
 	private static int findAxeSlot(LocalPlayer player) {

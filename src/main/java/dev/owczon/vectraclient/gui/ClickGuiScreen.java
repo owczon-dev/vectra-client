@@ -11,7 +11,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
@@ -59,6 +61,9 @@ public class ClickGuiScreen extends Screen {
 	private static final int LOGO_H        = 60;
 	private static final int CLOSE_BTN_SZ  = 16;
 	private static final int GEAR_BTN_W    = 20;
+	private static final int LOGO_IMG_SIZE = 48;
+
+	private static final Identifier LOGO_TEXTURE = VectraClient.id("icon");
 
 	// ── Persistent state ──────────────────────────────────────────────────────────
 	private static int panelX = -1;
@@ -168,10 +173,12 @@ public class ClickGuiScreen extends Screen {
 	private void drawSidebar(GuiGraphicsExtractor g, Font font, int mx, int my) {
 		g.fill(pX, pY, pX + SIDEBAR_W, pY + pH, COL_SIDEBAR);
 
-		// Logo
-		int logoY = pY + 14;
-		drawText(g, font, "VECTRA", pX + 16, logoY, COL_ACCENT, true);
-		drawText(g, font, "CLIENT", pX + 16, logoY + 14, COL_TEXT_DIM, false);
+		// Logo image (icon.png, 64×64, drawn at 48×48 centered)
+		int logoX = pX + (SIDEBAR_W - LOGO_IMG_SIZE) / 2;
+		int logoY = pY + 8;
+		g.blit(RenderPipelines.GUI_TEXTURED, LOGO_TEXTURE,
+				logoX, logoY, 0, 0,
+				LOGO_IMG_SIZE, LOGO_IMG_SIZE, 64, 64);
 
 		// Accent line
 		g.fill(pX + 16, pY + LOGO_H - 4, pX + SIDEBAR_W - 16, pY + LOGO_H - 3, COL_ACCENT_DIM);

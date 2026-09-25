@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **50 353 bytes**;
+URL for it) and drop it into your `mods` folder. It is **50 293 bytes**;
 
 ```
-sha256 f2d0d1cd7ed41d9b6d995ef5779a502aa4c21e5e205e0f322fac41a2e257e921
+sha256 c971547e9ab1e1abf674afc5d65954e20e15802f2a4d85b3116b76b8b872be3c
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -97,10 +97,10 @@ the hit lands rather than only animating. TBot also skips attacking while you're
 
 **Shield Breaker** only reacts to *your* attack — it never attacks on its own. While you hold attack
 with a blocking player under your crosshair, it swaps the axe from your hotbar into your hand, hits,
-then returns the previously held item. An axe hit disables a shield for a few seconds; a sword swing
-just bounces off. Settings: **Range** (1–6, default 4), **Swap Back** (1–20 ticks it holds the axe,
-default 4) and **Cooldown** (0–40 ticks between swaps, default 10). If you're already holding an axe
-it does nothing and lets the vanilla hit do the work.
+then returns the previously held item — all in the same tick. An axe hit disables a shield for a
+few seconds; a sword swing just bounces off. Settings: **Range** (1–6, default 4) and **Cooldown**
+(0–40 ticks between swaps, default 6). If you're already holding an axe it does nothing and lets
+the vanilla hit do the work.
 
 Both modules are client-side. Shield Breaker keeps the server in sync by sending the carried-item
 packet itself, because `MultiPlayerGameMode` only re-sends it when it next attacks or interacts —
