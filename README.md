@@ -4,6 +4,26 @@ A client-side Fabric utility mod for **Minecraft 26.2**.
 
 Everything lives behind a ClickGUI opened with **P**.
 
+## Download (prebuilt)
+
+The built mod jar is committed to this repo at:
+
+```
+release/vectra-client-0.1.0.jar
+```
+
+Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
+URL for it) and drop it into your `mods` folder. It is **36 639 bytes**;
+
+```
+sha256 de1a43bfc6aa8e44c3ad6bcee486a34d04e4e346fb79814134cf2088847d8c3c
+```
+
+Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
+zip, and saving that page as a `.jar` gives you a file that Fabric rejects with
+`java.util.zip.ZipException: zip END header not found`. If you ever see that error, your copy is
+truncated or is an HTML page: check that the size is 36 639 bytes before blaming the mod.
+
 ## Contents
 
 ### ClickGUI
