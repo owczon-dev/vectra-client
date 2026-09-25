@@ -65,7 +65,7 @@ jobs:
   # project's compile classpath (Minecraft, Fabric API, loader, ...), which normally come from
   # Maven/Mojang. Pushed to the ci-toolchain branch so it can be fetched with git.
   provision-toolchain:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event.head_commit != null && contains(github.event.head_commit.message, '[toolchain]'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
