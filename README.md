@@ -13,10 +13,10 @@ release/vectra-client-0.1.0.jar
 ```
 
 Download it with the **Download raw file** button on that file's GitHub page (or any raw-file
-URL for it) and drop it into your `mods` folder. It is **44 053 bytes**;
+URL for it) and drop it into your `mods` folder. It is **47 959 bytes**;
 
 ```
-sha256 341b8d42623702f55aca810b5fe5c3419353735a9809a7858ec8dc79d06670c9
+sha256 cad92e1f1243863362dda773d2a4c7361399eae897c5d96d6e05af5a0c1d2d3a
 ```
 
 Do **not** grab the jar out of a GitHub Actions run — those artifacts are served as a login-gated
@@ -50,6 +50,7 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 | Ping Display | Shows your latency to the server in milliseconds |
 | Reach Display | Shows the distance to the entity currently under your crosshair |
 | Overlay | Shows a coloured outline around other players and optionally their health |
+| Tracers | Draws lines from your crosshair to other players, coloured by distance |
 
 **Combat**
 
@@ -57,6 +58,7 @@ behind it (it doesn't pause the game), so combat modules stay live while you con
 |---|---|
 | TBot | Attacks (and swings at) the nearest other player that comes within range |
 | Shield Breaker | Swaps to an axe for one hit when you attack a blocking player, then swaps back |
+| Aim | Smoothly pulls your crosshair towards the nearest player within reach |
 
 **Movement**
 
@@ -137,6 +139,27 @@ outline renderer handles the rest — no custom shaders, no framebuffer hacks. T
 is submitted through the same `submitNameTag` code path that vanilla's own nametags use, so
 it scales and fades the same way.
 
+**Tracers** draws a line from your crosshair (the camera position) to every other player
+in range, using vanilla's gizmo debug-line system (`DrawableGizmoPrimitives#addLine`).
+Colour lerp: green (far) → yellow (mid) → red (close).
+
+| Setting | Default | What it does |
+|---|---|---|
+| Max Distance | 64 (8–256) | Players beyond this distance are not drawn |
+| Line Width | 1.5 (0.5–5) | Thickness of the tracer lines |
+
+**Aim** smoothly rotates your crosshair towards the nearest player within reach.
+It calculates the angular delta between your current look direction and the target,
+then applies a configurable fraction of that delta each tick — so the rotation looks
+human rather than snapping. The aim point is placed at the target's mid-torso (50% of
+bounding-box height) to minimise vertical movement.
+
+| Setting | Default | What it does |
+|---|---|---|
+| Reach | 4.5 (1–6) | Only targets players within this distance |
+| Smooth | 0.5 (0.05–1) | Fraction of the angular delta applied each tick; lower = slower, smoother |
+| Require Aim Key | off | Only aim while the attack key is held |
+
 **World** and **Uncategorized** are listed in the GUI but have no modules yet.
 
 ### Config
@@ -207,7 +230,7 @@ dev.owczon.vectraclient
 │   ├── ModuleManager       owns every module instance and drives their ticks
 │   ├── Setting             DoubleSetting / BooleanSetting
 │   └── impl/               FpsDisplay, PingDisplay, ReachDisplay, TBot, ShieldBreaker,
-│                             JumpReset, Offhand, Overlay
+│                             JumpReset, Offhand, Overlay, Tracers, Aim
 ├── hud/HudRenderer         draws the enabled display modules via HudElementRegistry
 ├── gui/ClickGuiScreen      the ClickGUI panel
 ├── gui/widget/SettingSlider  slider bound to a DoubleSetting

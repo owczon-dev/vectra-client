@@ -1,5 +1,6 @@
 package dev.owczon.vectraclient.module;
 
+import dev.owczon.vectraclient.module.impl.AimModule;
 import dev.owczon.vectraclient.module.impl.FpsDisplayModule;
 import dev.owczon.vectraclient.module.impl.JumpResetModule;
 import dev.owczon.vectraclient.module.impl.OffhandModule;
@@ -8,6 +9,7 @@ import dev.owczon.vectraclient.module.impl.PingDisplayModule;
 import dev.owczon.vectraclient.module.impl.ReachDisplayModule;
 import dev.owczon.vectraclient.module.impl.ShieldBreakerModule;
 import dev.owczon.vectraclient.module.impl.TBotModule;
+import dev.owczon.vectraclient.module.impl.TracersModule;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,10 +36,12 @@ public final class ModuleManager {
 		register(new PingDisplayModule());
 		register(new ReachDisplayModule());
 		register(new OverlayModule());
+		register(new TracersModule());
 
 		// -- Combat --
 		register(new TBotModule());
 		register(new ShieldBreakerModule());
+		register(new AimModule());
 
 		// -- Movement --
 		register(new JumpResetModule());

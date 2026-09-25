@@ -5,6 +5,7 @@ import dev.owczon.vectraclient.hud.HudRenderer;
 import dev.owczon.vectraclient.keybind.KeybindManager;
 import dev.owczon.vectraclient.module.ModuleManager;
 import dev.owczon.vectraclient.module.impl.OverlayModule;
+import dev.owczon.vectraclient.module.impl.TracersModule;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -32,6 +33,7 @@ public class VectraClient implements ClientModInitializer {
 
 		HudRenderer.register();
 		OverlayModule.register();
+		TracersModule.register();
 
 		// Safety net: nothing should stay enabled - or unsaved - past the client shutting down.
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
