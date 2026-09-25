@@ -40,10 +40,11 @@ tasks.register('exportCompileClasspath') {
 		delete outDir
 		outDir.mkdirs()
 
-		def wanted = ~/(?i).*(minecraft|fabric|gson|lwjgl|joml|annotations).*\.jar/
-		def jars = sourceSets.main.compileClasspath.files.findAll {
-			it.isFile() && it.name ==~ wanted
-		}
+		// Everything, not a filtered subset: javac needs classes that appear in signatures even
+		// when the mod never names them (brigadier's Message behind Component, jspecify's @Nullable
+		// all over the Minecraft API). Omitting one makes javac report bogus "cannot find symbol"
+		// errors for unrelated inherited methods.
+		def jars = sourceSets.main.compileClasspath.files.findAll { it.isFile() }
 
 		copy {
 			from jars

@@ -98,7 +98,7 @@ jobs:
 
       - name: Build a minimal JDK with javac and jar
         run: |
-          jlink --add-modules jdk.compiler,jdk.jartool \
+          jlink --add-modules jdk.compiler,jdk.jartool,jdk.jdeps \
                 --no-header-files --no-man-pages --strip-debug \
                 --output jdk-min
           tar czf jdk-min.tar.gz jdk-min
